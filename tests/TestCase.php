@@ -3,8 +3,8 @@
 namespace LarsWiegers\TranslationExportForLaravel\Tests;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Orchestra\Testbench\TestCase as Orchestra;
 use LarsWiegers\TranslationExportForLaravel\TranslationExportForLaravelServiceProvider;
+use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra
 {

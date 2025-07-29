@@ -2,9 +2,9 @@
 
 namespace LarsWiegers\TranslationExportForLaravel;
 
+use LarsWiegers\TranslationExportForLaravel\Commands\TranslationExportForLaravelCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use LarsWiegers\TranslationExportForLaravel\Commands\TranslationExportForLaravelCommand;
 
 class TranslationExportForLaravelServiceProvider extends PackageServiceProvider
 {
