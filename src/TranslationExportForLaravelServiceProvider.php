@@ -2,24 +2,17 @@
 
 namespace LarsWiegers\TranslationExportForLaravel;
 
-use Spatie\LaravelPackageTools\Package;
-use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Illuminate\Support\ServiceProvider;
 use LarsWiegers\TranslationExportForLaravel\Commands\TranslationExportForLaravelCommand;
 
-class TranslationExportForLaravelServiceProvider extends PackageServiceProvider
+class TranslationExportForLaravelServiceProvider extends ServiceProvider
 {
-    public function configurePackage(Package $package): void
+    public function boot()
     {
-        /*
-         * This class is a Package Service Provider
-         *
-         * More info: https://github.com/spatie/laravel-package-tools
-         */
-        $package
-            ->name('translation-export-for-laravel')
-            ->hasConfigFile()
-            ->hasViews()
-            ->hasMigration('create_translation_export_for_laravel_table')
-            ->hasCommand(TranslationExportForLaravelCommand::class);
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                TranslationExportForLaravelCommand::class,
+            ]);
+        }
     }
 }

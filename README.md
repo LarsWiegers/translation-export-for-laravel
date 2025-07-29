@@ -5,7 +5,7 @@
 [![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/larswiegers/translation-export-for-laravel/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/larswiegers/translation-export-for-laravel/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/larswiegers/translation-export-for-laravel.svg?style=flat-square)](https://packagist.org/packages/larswiegers/translation-export-for-laravel)
 
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
+This package allows you to export your Laravel translations to JSON files.
 
 ## Support us
 
@@ -23,37 +23,24 @@ You can install the package via composer:
 composer require larswiegers/translation-export-for-laravel
 ```
 
-You can publish and run the migrations with:
-
-```bash
-php artisan vendor:publish --tag="translation-export-for-laravel-migrations"
-php artisan migrate
-```
-
-You can publish the config file with:
-
-```bash
-php artisan vendor:publish --tag="translation-export-for-laravel-config"
-```
-
-This is the contents of the published config file:
-
-```php
-return [
-];
-```
-
-Optionally, you can publish the views using
-
-```bash
-php artisan vendor:publish --tag="translation-export-for-laravel-views"
-```
-
 ## Usage
 
-```php
-$translationExportForLaravel = new LarsWiegers\TranslationExportForLaravel();
-echo $translationExportForLaravel->echoPhrase('Hello, Lars Wiegers!');
+Export all translations for a single language:
+
+```bash
+php artisan translations:export en
+```
+
+Export all translations for all languages, each to their own file:
+
+```bash
+php artisan translations:export
+```
+
+Export all translations for all languages to a single file:
+
+```bash
+php artisan translations:export --all
 ```
 
 ## Testing

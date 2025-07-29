@@ -63,10 +63,7 @@
         "laravel": {
             "providers": [
                 "LarsWiegers\\TranslationExportForLaravel\\TranslationExportForLaravelServiceProvider"
-            ],
-            "aliases": {
-                "TranslationExportForLaravel": "LarsWiegers\\TranslationExportForLaravel\\Facades\\TranslationExportForLaravel"
-            }
+            ]
         }
     },
     "minimum-stability": "dev",
