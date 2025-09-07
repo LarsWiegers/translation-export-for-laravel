@@ -4,8 +4,6 @@ namespace LarsWiegers\TranslationExportForLaravel\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Lang;
-use Illuminate\Translation\Translator;
 
 class TranslationExportForLaravelCommand extends Command
 {
@@ -25,7 +23,7 @@ class TranslationExportForLaravelCommand extends Command
         $files = File::allFiles($directory);
         $directories = File::directories($directory);
 
-        $languages = array_map(function ($dir) use ($directory) {
+        $languages = array_map(function ($dir) {
             return basename($dir);
         }, $directories);
         $translations = $this->getTranslations($files, $directory, $language, $translations);
@@ -42,23 +40,17 @@ class TranslationExportForLaravelCommand extends Command
             File::put($exportFilePath, json_encode($translations[$language], JSON_PRETTY_PRINT));
         }
 
-
         return 0;
     }
 
     /**
-     * @param array $files
-     * @param bool|array|string $directory
-     * @param string $language
-     * @param array $translations
-     * @return array
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
     public function getTranslations(array $files, bool|array|string $directory, string $language, array $translations): array
     {
         foreach ($files as $key => $file) {
             $name = $file->getFilenameWithoutExtension();
-            $relativePath = str_replace($directory . DIRECTORY_SEPARATOR, '', $file->getRealPath());
+            $relativePath = str_replace($directory.DIRECTORY_SEPARATOR, '', $file->getRealPath());
 
             if ($file->getExtension() === 'php') {
                 $language = dirname($relativePath);
@@ -69,7 +61,7 @@ class TranslationExportForLaravelCommand extends Command
                 } else {
                     $this->error("Error including PHP file: {$file->getRealPath()}");
                 }
-            } else if ($file->getExtension() === 'json') {
+            } elseif ($file->getExtension() === 'json') {
                 $language = basename($file->getFilename(), '.json');
                 $content = json_decode(File::get($file->getRealPath()), true);
                 if (json_last_error() === JSON_ERROR_NONE) {
@@ -79,6 +71,7 @@ class TranslationExportForLaravelCommand extends Command
                 }
             }
         }
+
         return $translations;
     }
 }
