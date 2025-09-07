@@ -4,69 +4,81 @@ namespace LarsWiegers\TranslationExportForLaravel\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Lang;
+use Illuminate\Translation\Translator;
 
 class TranslationExportForLaravelCommand extends Command
 {
-    public $signature = 'translations:export {language? : The language to export.} {--all : Export all languages to a single file.}';
+    public $signature = 'translations:export {language? : The language to export.} {--all : Export all languages to a single file.} {--directory : The directory to export translations from.}';
 
     public $description = 'My command';
 
     public function handle(): int
     {
-        if ($this->option('all')) {
-            return $this->exportAllLanguages();
-        }
+        // read translations from the specified directory
+        $directory = $this->option('directory') ?: lang_path();
+        // if no language is specified, export all languages
+        $language = $this->argument('language') ?: 'en';
 
-        if ($this->argument('language')) {
-            return $this->exportLanguage($this->argument('language'));
-        }
-
-        $locales = collect(File::directories(lang_path()))
-            ->map(fn ($dir) => basename($dir));
-
-        foreach ($locales as $locale) {
-            $this->exportLanguage($locale);
-        }
-
-        $this->comment('All done');
-
-        return self::SUCCESS;
-    }
-
-    private function exportAllLanguages(): int
-    {
         $translations = [];
+        // load all translation files from the specified directory
+        $files = File::allFiles($directory);
+        $directories = File::directories($directory);
 
-        $locales = collect(File::directories(lang_path()))
-            ->map(fn ($dir) => basename($dir));
+        $languages = array_map(function ($dir) use ($directory) {
+            return basename($dir);
+        }, $directories);
+        $translations = $this->getTranslations($files, $directory, $language, $translations);
 
-        foreach ($locales as $locale) {
-            $translations[$locale] = collect(File::allFiles(lang_path($locale)))
-                ->filter(fn ($file) => $file->getExtension() === 'php')
-                ->flatMap(function ($file) {
-                    return include $file->getRealPath();
-                });
+        // if --all option is used, export all languages to a single file
+        if ($this->option('all')) {
+            $exportFilePath = storage_path("{$language}.json");
+            File::put($exportFilePath, json_encode($translations, JSON_PRETTY_PRINT));
+            $this->info("Translations exported to {$exportFilePath}");
+        } else {
+            // otherwise export the specified language
+            $exportFilePath = storage_path("{$language}.json");
+
+            File::put($exportFilePath, json_encode($translations[$language], JSON_PRETTY_PRINT));
         }
 
-        File::put(lang_path('all.json'), json_encode($translations, JSON_PRETTY_PRINT));
 
-        $this->comment('All languages exported to all.json');
-
-        return self::SUCCESS;
+        return 0;
     }
 
-    private function exportLanguage(string $language): int
+    /**
+     * @param array $files
+     * @param bool|array|string $directory
+     * @param string $language
+     * @param array $translations
+     * @return array
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     */
+    public function getTranslations(array $files, bool|array|string $directory, string $language, array $translations): array
     {
-        $translations = collect(File::allFiles(lang_path($language)))
-            ->filter(fn ($file) => $file->getExtension() === 'php')
-            ->flatMap(function ($file) {
-                return include $file->getRealPath();
-            });
+        foreach ($files as $key => $file) {
+            $name = $file->getFilenameWithoutExtension();
+            $relativePath = str_replace($directory . DIRECTORY_SEPARATOR, '', $file->getRealPath());
 
-        File::put(lang_path($language . '.json'), $translations->toJson(JSON_PRETTY_PRINT));
+            if ($file->getExtension() === 'php') {
+                $language = dirname($relativePath);
 
-        $this->comment('Language ' . $language . ' exported to ' . $language . '.json');
-
-        return self::SUCCESS;
+                $content = include $file->getRealPath();
+                if (is_array($content)) {
+                    $translations[$language][$name] = $content;
+                } else {
+                    $this->error("Error including PHP file: {$file->getRealPath()}");
+                }
+            } else if ($file->getExtension() === 'json') {
+                $language = basename($file->getFilename(), '.json');
+                $content = json_decode(File::get($file->getRealPath()), true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $translations[$language][$name] = $content;
+                } else {
+                    $this->error("Error decoding JSON from file: {$file->getRealPath()}");
+                }
+            }
+        }
+        return $translations;
     }
 }
